@@ -1,0 +1,22 @@
+/* // <uniquifier>: Use a unique and descriptive class name
+// <weight>: Use a value from 100 to 900 */
+
+.montserrat-head {
+  font-family: "Montserrat", serif;
+  font-optical-sizing: auto;
+  font-weight: 700;
+  font-style: normal;
+}
+
+.rounder {
+  border-radius: 300px;
+}
+
+.round {
+  border-radius: 12px;
+}
+
+#signUp {
+  border-color: #000;
+  border-radius: 17px;
+}
