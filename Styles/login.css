@@ -2,7 +2,7 @@
 // <weight>: Use a value from 100 to 900 */
 
 body {
-  background-image: url("Images/VeritasLandscape.jpg");
+  background-image: url("../Images/VeritasLandscape.jpg");
   background-size: cover;
   background-repeat: no-repeat;
 }
