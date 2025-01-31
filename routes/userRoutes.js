@@ -17,8 +17,11 @@ router.post('/register/student', async (req, res) => {
       password: hashedPassword,
       role: 'student'
     });
-    await user.save();
-    res.status(201).json({ message: 'Student registered successfully' });
+    const newuser = await user.save();
+    const token = jwt.sign({ userId: newuser._id }, 'ADMIN', { expiresIn: '1h' });
+    res.cookie('token', token, { httpOnly: true });
+    return res.redirect('/shome');
+    
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -39,8 +42,11 @@ router.post('/register/driver', async (req, res) => {
       accNo,
       bank
     });
-    await user.save();
-    res.status(201).json({ message: 'Driver registered successfully' });
+    const newuser = await user.save();
+    const token = jwt.sign({ userId: newuser._id }, 'ADMIN', { expiresIn: '1h' });
+    res.cookie('token', token, { httpOnly: true });
+    return res.redirect('/dhome'); 
+    
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -60,7 +66,11 @@ router.post('/login', async (req, res) => {
     }
     const token = jwt.sign({ userId: user._id }, 'ADMIN', { expiresIn: '1h' });
     res.cookie('token', token, { httpOnly: true });
-    res.status(200).json({ message: 'Login successful' });
+    if (user.role === "student") {
+      return res.redirect('/shome');  
+    } else {
+      return res.redirect('/dhome');  
+    }
   } catch (error) {
     res.status(400).json({ error: error.message });
   }

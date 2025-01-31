@@ -24,17 +24,8 @@ body {
 
 #signUp {
   border-radius: 17px;
-  border: none;
 }
 
 i {
   display: block;
-}
-.left-side {
-  background-color: #fff;
-}
-
-a {
-  text-decoration: none;
-  color: #840e0e;
 }

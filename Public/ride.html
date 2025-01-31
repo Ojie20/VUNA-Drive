@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Go Anywhere with Uber</title>
+    <title>Go Anywhere with VUNA-Drive</title>
     <!-- Bootstrap 5 CSS -->
     <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css" />
     <style>
@@ -56,69 +56,21 @@
         <!-- Pickup Location -->
         <div class="mb-3">
           <label for="pickup" class="form-label">Pickup location</label>
-          <select name="Pick Up" class="form-select" id="">
+          <select name="Pick Up" class="form-select" id="pickup">
             <option selected>Select your Pick Up</option>
-            <option value="">Block A</option>
-            <option value="">Block B</option>
-            <option value="">Block C</option>
-            <option value="">Block D</option>
-            <option value="">Multipurpose Hall</option>
-            <option value="">Auditorium</option>
-            <option value="">Chapel</option>
-            <option value="">School Gate</option>
-            <option value="">Medicine Faculty</option>
-            <option value="">Stanzel</option>
-            <option value="">CICL</option>
-            <option value="">Pa Etos</option>
-            <option value="">Old Kelson</option>
-            <option value="">New Kelson</option>
-            <option value="">Hostel A</option>
-            <option value="">Hostel C</option>
-            <option value="">Hostel F</option>
-            <option value="">Hostel H</option>
-            <option value="">Hostel I</option>
-            <option value="">Hostel K</option>
-            <option value="">Hostel M</option>
-            <option value="">Hostel N</option>
-            <option value="">Hostel P</option>
-            <option value="">Hostel R</option>
           </select>
         </div>
 
         <!-- Dropoff Location -->
         <div class="mb-3">
           <label for="dropoff" class="form-label">Dropoff location</label>
-          <select name="Drop Off" class="form-select" id="">
+          <select name="Drop Off" class="form-select" id="dropoff">
             <option selected>Select your Drop Off</option>
-            <option value="">Block A</option>
-            <option value="">Block B</option>
-            <option value="">Block C</option>
-            <option value="">Block D</option>
-            <option value="">Multipurpose Hall</option>
-            <option value="">Auditorium</option>
-            <option value="">Chapel</option>
-            <option value="">School Gate</option>
-            <option value="">Medicine Faculty</option>
-            <option value="">Stanzel</option>
-            <option value="">CICL</option>
-            <option value="">Pa Etos</option>
-            <option value="">Old Kelson</option>
-            <option value="">New Kelson</option>
-            <option value="">Hostel A</option>
-            <option value="">Hostel C</option>
-            <option value="">Hostel F</option>
-            <option value="">Hostel H</option>
-            <option value="">Hostel I</option>
-            <option value="">Hostel K</option>
-            <option value="">Hostel M</option>
-            <option value="">Hostel N</option>
-            <option value="">Hostel P</option>
-            <option value="">Hostel R</option>
           </select>
         </div>
 
         <!-- See Prices Button -->
-        <button class="btn btn-primary">See prices</button>
+        <button class="btn btn-primary">Book Now</button>
       </div>
     </div>
 
@@ -141,5 +93,23 @@
     </div>
 
     <script src="bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        fetch('/rides/destinations')
+          .then(response => response.json())
+          .then(destinations => {
+            const pickupSelect = document.getElementById('pickup');
+            const dropoffSelect = document.getElementById('dropoff');
+            destinations.forEach(destination => {
+              const option = document.createElement('option');
+              option.value = destination._id;
+              option.textContent = destination.name;
+              pickupSelect.appendChild(option.cloneNode(true));
+              dropoffSelect.appendChild(option);
+            });
+          })
+          .catch(error => console.error('Error fetching destinations:', error));
+      });
+    </script>
   </body>
 </html>

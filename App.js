@@ -20,17 +20,25 @@ app.get('/', function (req, res) {
     res.sendFile(path.join(__dirname, 'public', 'index.html')); // Add this line
 });
 
+app.get('/shome', function (req, res) {
+  res.sendFile(path.join(__dirname, 'public', 'ride.html')); // Add this line
+});
+
 const user = require('./models/User');
 
 
 
 const userRoutes = require('./routes/userRoutes');
+const rideRoutes = require('./routes/rideRoutes');
 
 
 
 
 
 app.use('/users', userRoutes);
+app.use('/rides', rideRoutes);
+
+
 app.listen(port, function () {
   console.log(`Listening on port ${port}`);
   console.log(`Open your browser and navigate to http://localhost:${port}`); // Add this line
