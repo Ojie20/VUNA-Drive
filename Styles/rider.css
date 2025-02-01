@@ -1,0 +1,23 @@
+body {
+  font-family: Arial, sans-serif;
+  background-image: url("../Images/VeritasLandscape.jpg");
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.vh-100 {
+  height: 100vh;
+}
+
+.h-50 {
+  height: 50%;
+}
+
+.overflow-auto {
+  overflow: auto;
+}
+
+.list-group-item {
+  margin-bottom: 10px;
+  border-radius: 5px;
+}
