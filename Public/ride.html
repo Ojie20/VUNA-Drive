@@ -1,115 +1,344 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Go Anywhere with VUNA-Drive</title>
-    <!-- Bootstrap 5 CSS -->
-    <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css" />
-    <style>
-      body {
-        background-color: #f4f4f4;
-        margin: 0;
-        padding: 20px;
-        height: 100vh;
-        background-image: url("Images/VeritasLandscape.jpg");
-        background-size: cover;
-      }
 
-      h1 {
-        font-size: 24px;
-        font-weight: bold;
-        text-align: center;
-        margin-bottom: 20px;
-      }
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Go Anywhere with VUNA-Drive</title>
+  <!-- Bootstrap 5 CSS -->
+  <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css" />
+  <style>
+    body {
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 20px;
+      height: 100vh;
+      background-image: url("Images/VeritasLandscape.jpg");
+      background-size: cover;
+    }
 
-      .btn-primary {
-        width: 100%;
-        padding: 10px;
-        font-size: 16px;
-      }
+    h1 {
+      font-size: 24px;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 20px;
+    }
 
-      .map-container {
-        height: 100%;
-        border-radius: 10px;
-        overflow: hidden;
-      }
+    .btn-primary {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+    }
 
-      iframe {
-        width: 100%;
-        height: 100%;
-        border: 0;
-      }
-    </style>
-  </head>
-  <body class="row m-0">
-    <!-- Form Section -->
-    <div class="col-md-6 vh-100 position-relative">
-      <div
-        class="card p-4 w-75 position-absolute top-50 start-50 translate-middle"
-      >
-        <div class="d-flex justify-content-center">
-          <img src="Images/DriveLogo.jpg" alt="" />
-        </div>
-        <h1>Ride with VUNA-Drive</h1>
+    .map-container {
+      height: 100%;
+      border-radius: 10px;
+      overflow: hidden;
+    }
 
-        <!-- Pickup Location -->
-        <div class="mb-3">
-          <label for="pickup" class="form-label">Pickup location</label>
-          <select name="Pick Up" class="form-select" id="pickup">
-            <option selected>Select your Pick Up</option>
-          </select>
-        </div>
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
 
-        <!-- Dropoff Location -->
-        <div class="mb-3">
-          <label for="dropoff" class="form-label">Dropoff location</label>
-          <select name="Drop Off" class="form-select" id="dropoff">
-            <option selected>Select your Drop Off</option>
-          </select>
-        </div>
+    .popup {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: white;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+    }
 
-        <!-- See Prices Button -->
-        <button class="btn btn-primary">Book Now</button>
+    .popup-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 999;
+    }
+  </style>
+  <script src="/socket.io/socket.io.js"></script>
+</head>
+
+<body class="row m-0">
+  <!-- Form Section -->
+  <div class="col-md-6 vh-100 position-relative">
+    <div class="card p-4 w-75 position-absolute top-50 start-50 translate-middle">
+      <div class="d-flex justify-content-center">
+        <img src="Images/DriveLogo.jpg" alt="" />
       </div>
-    </div>
+      <h1>Ride with VUNA-Drive</h1>
 
-    <!-- Map Section -->
-    <div class="col-md-6 vh-100 position-relative m-0">
-      <div
-        class="card w-75 h-75 position-absolute top-50 start-50 translate-middle"
-      >
-        <!-- Google Maps Embed API -->
-        <iframe
-          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2464.5466016648797!2d7.4160305062487!3d9.288933069185422!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x104e0bfaa64afab3%3A0xf8088b575d0eec30!2sVeritas%20University%20Abuja!5e0!3m2!1sen!2sng!4v1738179178305!5m2!1sen!2sng"
-          width="600"
-          height="450"
-          style="border: 0"
-          allowfullscreen=""
-          loading="lazy"
-          referrerpolicy="no-referrer-when-downgrade"
-        ></iframe>
+      <!-- Pickup Location -->
+      <div class="mb-3">
+        <label for="pickup" class="form-label">Pickup location</label>
+        <select name="Pick Up" class="form-select" id="pickup">
+          <option selected>Select your Pick Up</option>
+        </select>
       </div>
-    </div>
 
-    <script src="bootstrap/js/bootstrap.bundle.min.js"></script>
-    <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        fetch('/rides/destinations')
+      <!-- Dropoff Location -->
+      <div class="mb-3">
+        <label for="dropoff" class="form-label">Dropoff location</label>
+        <select name="Drop Off" class="form-select" id="dropoff" onchange="validateLocations()">
+          <option selected>Select your Drop Off</option>
+        </select>
+        <div id="locationError" class="text-danger" style="display: none;">
+          Pickup and dropoff locations cannot be the same
+        </div>
+      </div>
+
+      <!-- See Prices Button -->
+      <button class="btn btn-primary" id="bookNow">Book Now</button>
+    </div>
+  </div>
+
+  <!-- Map Section -->
+  <div class="col-md-6 vh-100 position-relative m-0">
+    <div class="card w-75 h-75 position-absolute top-50 start-50 translate-middle">
+      <!-- Google Maps Embed API -->
+      <iframe
+        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2464.5466016648797!2d7.4160305062487!3d9.288933069185422!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x104e0bfaa64afab3%3A0xf8088b575d0eec30!2sVeritas%20University%20Abuja!5e0!3m2!1sen!2sng!4v1738179178305!5m2!1sen!2sng"
+        width="600" height="450" style="border: 0" allowfullscreen="" loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade"></iframe>
+    </div>
+  </div>
+
+  <!-- Popup Overlay -->
+  <div class="popup-overlay" id="popupOverlay"></div>
+
+  <!-- Popup -->
+  <div class="popup" id="ridePopup">
+
+
+  </div>
+
+  <script src="bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.1/dist/js.cookie.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
+  <script>
+
+    // destination population in frontend
+    document.addEventListener("DOMContentLoaded", function () {
+      fetch('/rides/destinations')
+        .then(response => response.json())
+        .then(destinations => {
+          const pickupSelect = document.getElementById('pickup');
+          const dropoffSelect = document.getElementById('dropoff');
+          destinations.forEach(destination => {
+            const option = document.createElement('option');
+            option.value = destination._id;
+            option.textContent = destination.name;
+            pickupSelect.appendChild(option.cloneNode(true));
+            dropoffSelect.appendChild(option);
+          });
+        })
+        .catch(error => console.error('Error fetching destinations:', error));
+      
+      // Retrieve user ID from token
+      var userId;
+      const tokenCookie = document.cookie.split('; ').find(row => row.startsWith('Vunatoken='));
+      if (!tokenCookie) {
+        console.error('No token found in cookies.');
+        return null; // Token is missing
+      }
+      console.log('tokencookie:' + tokenCookie);
+
+      const token = tokenCookie.split('=')[1];
+      if (!token) {
+        console.error('Token is malformed or missing.');
+        return null;
+      }
+      console.log('token:' + token);
+      userId = decodeURIComponent(token).split('"')[1];
+      console.log('userId:' + userId);
+
+
+
+
+
+
+      //popup
+      function showPopup(title, message) {
+        const popup = document.getElementById('ridePopup');
+        popup.innerHTML = ''; // Clear previous content
+
+        // Create and append title
+        const titleElement = document.createElement('h2');
+        titleElement.innerHTML = title;
+        popup.appendChild(titleElement);
+
+        // Create and append message
+        const messageElement = document.createElement('div');
+        messageElement.innerHTML = message;
+        popup.appendChild(messageElement);
+
+        // Create and Append button
+        if (!title.includes('cancelled') && !title.includes('Completed')) {
+          const buttonElement = document.createElement('button');
+          buttonElement.innerHTML = 'Cancel Ride';
+          buttonElement.classList.add('btn', 'btn-danger');
+          buttonElement.id = 'cancelbutton';
+          buttonElement.addEventListener('click', function () {
+            
+            console.log('Cancel Ride button clicked');
+            console.log(currentRideId);
+            fetch(`/rides/cancel-ride/${currentRideId}`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              }
+            })
+              .then(response => response.json())
+              .then(data => {
+                buttonElement.remove();
+                showPopup('Ride cancelled successfully', 'Your ride has been succesfully cancelled');
+
+                setTimeout(() => {
+                  hidePopup();
+                }, 1000);
+
+              })
+              .catch(error => {
+                console.error('Error cancelling ride:', error);
+              });
+          });
+          popup.appendChild(buttonElement);
+        }
+        else if (title.includes('Completed')){
+          const buttonElement = document.createElement('button');
+          buttonElement.innerHTML = 'Close';
+          buttonElement.classList.add('btn', 'btn-primary');
+          buttonElement.id = 'closebutton';
+          buttonElement.addEventListener('click', function () {
+            hidePopup();
+          });
+          popup.appendChild(buttonElement);
+        }
+
+        // Show popup and overlay
+        popup.style.display = 'block';
+        document.getElementById('popupOverlay').style.display = 'block';
+      }
+
+      function hidePopup() {
+        document.getElementById('ridePopup').innerHTML = ''; // Clear previous content
+        document.getElementById('ridePopup').style.display = 'none';
+        document.getElementById('popupOverlay').style.display = 'none';
+      }
+
+      // Add validation for pickup/dropoff locations
+      const pickupSelect = document.getElementById('pickup');
+      const dropoffSelect = document.getElementById('dropoff');
+      const bookNowBtn = document.getElementById('bookNow');
+      const locationError = document.getElementById('locationError');
+
+      function validateLocations() {
+        if (pickupSelect.value === dropoffSelect.value && pickupSelect.value !== 'Select your Pick Up') {
+          locationError.style.display = 'block';
+          bookNowBtn.disabled = true;
+        } else {
+          locationError.style.display = 'none';
+          bookNowBtn.disabled = false;
+        }
+      }
+
+      pickupSelect.addEventListener('change', validateLocations);
+      dropoffSelect.addEventListener('change', validateLocations);
+
+
+      const socket = io();
+
+      // Ride request
+      var currentRideId;
+      document.getElementById('bookNow').addEventListener('click', function () {
+        console.log('Book Now button clicked');
+        const pickup = pickupSelect.value;
+        const dropoff = dropoffSelect.value;
+
+        if (pickup === 'Select your Pick Up' || dropoff === 'Select your Drop Off') {
+          alert('Please select both pickup and dropoff locations.');
+          return;
+        }
+
+        if (pickup === dropoff) {
+          alert('Pickup and dropoff locations cannot be the same.');
+          return;
+        }
+
+        const rideRequest = {
+          studentId: userId,
+          Pickup: pickup,
+          Dropoff: dropoff
+        };
+        console.log('Ride request:', rideRequest);
+
+        fetch('/rides/request-ride', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(rideRequest)
+        })
           .then(response => response.json())
-          .then(destinations => {
-            const pickupSelect = document.getElementById('pickup');
-            const dropoffSelect = document.getElementById('dropoff');
-            destinations.forEach(destination => {
-              const option = document.createElement('option');
-              option.value = destination._id;
-              option.textContent = destination.name;
-              pickupSelect.appendChild(option.cloneNode(true));
-              dropoffSelect.appendChild(option);
-            });
+          .then(data => {
+            currentRideId = data.rideId;
+            // Join the ride's room
+            socket.emit('joinRideRoom', currentRideId);
+            showPopup('Ride requested successfully', 'Your ride has been requested succesfully \n Please wait while we find a rider ');
           })
-          .catch(error => console.error('Error fetching destinations:', error));
+          .catch(error => {
+            console.error('Error requesting ride:', error);
+          });
       });
-    </script>
-  </body>
+
+
+      // Connect to WebSocket
+      
+
+      // Listen for ride acceptance
+      socket.on('rideAccepted', (data) => {
+        console.log('Ride accepted:', JSON.stringify(data));
+        showPopup('Driver Found!', `
+            <h4>Your driver is on the way!</h4>
+            <p>Driver: ${data.driver.name}</p>
+            <p>Phone: ${data.driver.phone}</p>
+            <p>Vehicle License Plate: ${data.driver.LicensePlate}</p>
+            <p>Fare: ₦150</p>
+        `);
+      });
+
+      // Listen for ride start
+      socket.on('rideStarted', () => {
+        showPopup('Ride Started', 'You are now on your way to your destination.');
+      });
+
+      // Listen for ride completion
+      socket.on('rideCompleted', (data) => {
+        showPopup('Ride Completed', `
+            <h4>Thank you for riding with us!</h4>
+            <p>Please make payment to:</p>
+            <p>Driver: ${data.driver.name}</p>
+            <p>Amount to pay: ₦150</p>
+            <p>Account: ${data.driver.accountNumber}</p>
+            <p>Bank: ${data.driver.bank}</p>
+            
+        `);
+      });
+      
+
+      
+
+    });
+  </script>
+</body>
+
 </html>

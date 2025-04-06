@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Driver Landing Page</title>
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="./bootstrap/css/bootstrap.min.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"
+    rel="stylesheet" />
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="./rider.css" />
+  <script src="/socket.io/socket.io.js"></script>
+</head>
+
+<body>
+  <div class="container-fluid h-100">
+    <div class="row h-100">
+      <div class="w-100 border">
+        <img src="./Images/Vlogo2.png" class="ps-3" alt="">
+      </div>
+      <!-- Left Section: Profile Information -->
+      <div class="col-md-4 sidebar border">
+
+        <div class="text-center">
+          <img src="./Images/DriveLogo.jpg" alt="" />
+          <h3 class="montserrat-head">Benedict</h3>
+        </div>
+        <hr />
+        <div>
+          <h5>Vehicle Information</h5>
+          <p><strong>Keke Model:</strong> Tricycle</p>
+          <p><strong>License Plate:</strong> ABC-1234</p>
+        </div>
+        <hr />
+        <div>
+          <h5>Contact Information</h5>
+          <p><strong>Phone:</strong> 08036557222</p>
+          <p><strong>Email:</strong> driver@gmail.com</p>
+          <p><strong>Acc No:</strong> 8143944644</p>
+          <p><strong>Bank:</strong> PALMPAY</p>
+        </div>
+      </div>
+
+      <!-- Middle Section: Map -->
+      <div class="col-md-8 p-0">
+        <div class="map-section d-flex justify-content-center align-items-center position-relative">
+          <iframe
+            src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d2464.5466016648797!2d7.4160305!3d9.2889330!3m2!1i1024!2i768!4f13.1!3m3!1m2!2d7.4160305!2d9.2889330!5e0!3m2!1sen!2sng!4v1738179178305"
+            width="100%" height="80%" style="border: 0;" allowfullscreen="" loading="lazy">
+          </iframe>
+
+        </div>
+        <!-- Bottom Section: Requests -->
+        <div class="requests h-25 p-4 mx-auto position-relative" id="rides">
+          <h4 class="montserrat-head text-left">Ride Requests</h4>
+          <div class="list-group overflow-auto d-flex flex-row" style="white-space: nowrap;">
+            <!-- Ride requests will be populated here -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ride Status Modal -->
+  <div class="modal fade" id="rideStatusModal" tabindex="-1" aria-labelledby="rideStatusModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title" id="rideStatusModalLabel">Ride Status</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body text-center">
+          <div id="pickupPhase">
+            <h4>Ride Accepted!</h4>
+            <p>You are en route to pick up the student.</p>
+            <button class="btn btn-success mt-3" onclick="confirmPickup()">Confirm Pickup</button>
+          </div>
+          <div id="dropoffPhase" style="display: none;">
+            <h4>En Route to Destination</h4>
+            <p>Driving student to their destination...</p>
+            <button class="btn btn-success mt-3" onclick="completeRide()">Complete Ride</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      // Connect to WebSocket
+      const socket = io();
+
+      // Join drivers room
+      socket.emit('joinDriverRoom');
+
+      // Listen for new ride requests
+      socket.on('newRideRequest', (ride) => {
+        const ridesContainer = document.getElementById('rides').querySelector('.list-group');
+        const rideItem = document.createElement('div');
+        rideItem.classList.add('list-group-item', 'w-55', 'me-3', 'rounded', 'shadow-sm');
+
+        // Add animation class
+        rideItem.classList.add('fade-in');
+
+        rideItem.innerHTML = `
+              <div class="card border-0">
+                  <div class="card-header bg-primary text-white text-center py-2 rounded-top">
+                      <h6 class="mb-0">New Ride Request</h6>
+                  </div>
+                  <div class="card-body px-3 py-2">
+                      <div class="location-details mb-3">
+                          <div class="pickup d-flex align-items-center mb-2">
+                              <span class="material-icons me-2">🔵</span>
+                              <div>
+                                  <small class="text-muted d-block">Pickup</small>
+                                  <strong>${ride.Pickup.name}</strong>
+                              </div>
+                          </div>
+                          <div class="dropoff d-flex align-items-center">
+                              <span class="material-icons me-2">📍</span>
+                              <div>
+                                  <small class="text-muted d-block">Destination</small>
+                                  <strong>${ride.Dropoff.name}</strong>
+                              </div>
+                          </div>
+                      </div>
+                      <div class="student-info border-top pt-2">
+                          <div class="d-flex align-items-center">
+                              <span class="material-icons me-2">📞</span>
+                              <div>
+                                  <small class="text-muted d-block">Student Contact</small>
+                                  <strong>${ride.studentId.phoneNo}</strong>
+                              </div>
+                          </div>
+                      </div>
+                      <div class="student-info border-top pt-2">
+                          <div class="d-flex align-items-center">
+                              <span class="material-icons me-2">💰</span>
+                              <div>
+                                  <small class="text-muted d-block">Fare</small>
+                                  <strong>₦150</strong>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+                  <div class="card-footer bg-transparent border-0 pt-0">
+                      <div class="d-flex justify-content-between gap-2 mt-2">
+                          <button class="btn btn-primary flex-grow-1" onclick="acceptRide('${ride._id}')" value="${ride._id}">
+                              Accept
+                          </button>
+                          <button class="btn btn-outline-danger flex-grow-1" onclick="declineRide('${ride._id}')" value="${ride._id}">
+                              Decline
+                          </button>
+                      </div>
+                  </div>
+              </div>
+          `;
+
+        ridesContainer.prepend(rideItem);
+      });
+
+      fetch('/rides/pending')
+        .then(response => response.json())
+        .then(rides => {
+          console.log(rides);
+          const declinedRides = JSON.parse(localStorage.getItem('declinedRides')) || [];
+          const ridesContainer = document.getElementById('rides').querySelector('.list-group');
+          ridesContainer.innerHTML = '';
+          const filteredRides = rides.filter(ride => !declinedRides.includes(ride._id));
+          console.log('filteredRides:', filteredRides);
+          filteredRides.forEach(ride => {
+            const rideItem = document.createElement('div');
+            rideItem.classList.add('list-group-item', 'w-55', 'me-3', 'rounded', 'shadow-sm');
+            rideItem.innerHTML = `
+                <div class="card border-0">
+                  <div class="card-header bg-primary text-white text-center py-2 rounded-top">
+                    <h6 class="mb-0">New Ride Request</h6>
+                  </div>
+                  <div class="card-body px-3 py-2">
+                    <div class="location-details mb-3">
+                      <div class="pickup d-flex align-items-center mb-2">
+                        <span class="material-icons me-2">🔵</span>
+                        <div>
+                          <small class="text-muted d-block">Pickup</small>
+                          <strong>${ride.Pickup.name}</strong>
+                        </div>
+                      </div>
+                      <div class="dropoff d-flex align-items-center">
+                        <span class="material-icons me-2">📍</span>
+                        <div>
+                          <small class="text-muted d-block">Destination</small>
+                          <strong>${ride.Dropoff.name}</strong>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="student-info border-top pt-2">
+                      <div class="d-flex align-items-center">
+                        <span class="material-icons me-2">📞</span>
+                        <div>
+                          <small class="text-muted d-block">Student Contact</small>
+                          <strong>${ride.studentId.phoneNo}</strong>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="student-info border-top pt-1">
+                      <div class="d-flex align-items-center">
+                        <span class="material-icons me-2">💰</span>
+                        <div>
+                          <small class="text-muted d-block">Fare</small>
+                          <strong>₦150</strong>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="card-footer bg-transparent border-0 pt-0">
+                    <div class="d-flex justify-content-between gap-2 mt-2">
+                      <button class="btn btn-primary flex-grow-1" onclick="acceptRide('${ride._id}')" value="${ride._id}">
+                        Accept
+                      </button>
+                      <button class="btn btn-outline-danger flex-grow-1" onclick="declineRide('${ride._id}')" value="${ride._id}">
+                        Decline
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              `;
+            ridesContainer.appendChild(rideItem);
+          });
+        })
+        .catch(error => console.error('Error fetching pending rides:', error));
+
+      // Retrieve userid from token
+
+      const tokenCookie = document.cookie.split('; ').find(row => row.startsWith('Vunatoken='));
+      if (!tokenCookie) {
+        console.error('No token found in cookies.');
+        return null; // Token is missing
+      }
+      console.log('tokencookie:' + tokenCookie);
+
+      const token = tokenCookie.split('=')[1];
+      if (!token) {
+        console.error('Token is malformed or missing.');
+        return null;
+      }
+      console.log('token:' + token);
+      userId = decodeURIComponent(token).split('"')[1];
+      console.log('userId:' + userId);
+
+      // New code to fetch driver details
+      fetch(`/users/driver/${userId}`)
+        .then(response => response.json())
+        .then(driver => {
+          // Update profile information
+          document.querySelector('.sidebar .montserrat-head').textContent = driver.firstName;
+
+          // Update vehicle information
+          const vehicleInfo = document.querySelector('.sidebar div:nth-of-type(2)');
+          vehicleInfo.innerHTML = `
+            <h5>Vehicle Information</h5>
+            <p><strong>Keke Model:</strong> ${driver.vehicleModel || 'Tricycle'}</p>
+            <p><strong>License Plate:</strong> ${driver.LicensePlate || 'N/A'}</p>
+          `;
+
+          // Update contact information
+          const contactInfo = document.querySelector('.sidebar div:nth-of-type(3)');
+          contactInfo.innerHTML = `
+            <h5>Contact Information</h5>
+            <p><strong>Phone:</strong> ${driver.phoneNo || 'N/A'}</p>
+            <p><strong>Email:</strong> ${driver.email || 'N/A'}</p>
+            <p><strong>Acc No:</strong> ${driver.accNo || 'N/A'}</p>
+            <p><strong>Bank:</strong> ${driver.bank || 'N/A'}</p>
+          `;
+
+          // Update profile image if available
+          if (driver.profileImage) {
+            document.querySelector('.sidebar img').src = driver.profileImage;
+          }
+        })
+        .catch(error => {
+          console.error('Error fetching driver details:', error);
+          // Show error message to user
+          alert('Failed to load driver information. Please refresh the page.');
+        });
+    });
+
+    // Add these functions after the existing DOMContentLoaded event listener
+
+    function acceptRide(rideId) {
+      // Get driver ID from cookie
+      if (!userId) {
+        alert('You must be logged in to accept rides');
+        return;
+      }
+      const driverId = userId;
+
+      fetch(`/rides/accept-ride/${rideId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ driverId: driverId })
+      })
+        .then(response => response.json())
+        .then(data => {
+          console.log('Ride accepted:', data);
+          // Store current ride ID
+          localStorage.setItem('currentRideId', rideId);
+
+          // Remove the ride card
+          const rideCard = document.querySelector(`[value="${rideId}"]`).closest('.list-group-item');
+          rideCard.remove();
+
+          // Update modal content with response data
+          document.getElementById('pickupPhase').innerHTML = `
+        <h4>Ride Accepted!</h4>
+        <p>You are en route to pick up the student.</p>
+        <p><strong>Student Name:</strong> ${data.StudentData.student.name}</p>
+        <p><strong>Student Phone:</strong> ${data.StudentData.student.phone}</p>
+        <p><strong>Fare:</strong> ₦150</p>
+        <button class="btn btn-success mt-3" onclick="confirmPickup()">Confirm Pickup</button>
+      `;
+
+          // Show the modal in pickup phase
+          document.getElementById('pickupPhase').style.display = 'block';
+          document.getElementById('dropoffPhase').style.display = 'none';
+          new bootstrap.Modal(document.getElementById('rideStatusModal')).show();
+        })
+        .catch(error => {
+          console.error('Error accepting ride:', error);
+          alert('Failed to accept ride. Please try again.');
+        });
+    }
+
+    function confirmPickup() {
+      const rideId = localStorage.getItem('currentRideId');
+      if (!rideId) {
+        console.error('No active ride found');
+        return;
+      }
+      const socket = io();
+      // Emit an event to the server to confirm pickup
+      socket.emit('confirmPickup', { rideId });
+
+      // Switch modal content to dropoff phase
+      document.getElementById('pickupPhase').style.display = 'none';
+      document.getElementById('dropoffPhase').style.display = 'block';
+    }
+
+    function completeRide() {
+      const rideId = localStorage.getItem('currentRideId');
+      if (!rideId) {
+        console.error('No active ride found');
+        return;
+      }
+
+      fetch(`/rides/complete-ride/${rideId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+        .then(response => response.json())
+        .then(data => {
+          // Close modal and clear current ride
+          bootstrap.Modal.getInstance(document.getElementById('rideStatusModal')).hide();
+          localStorage.removeItem('currentRideId');
+          alert('Ride completed successfully!');
+        })
+        .catch(error => {
+          console.error('Error completing ride:', error);
+          alert('Failed to complete ride. Please try again.');
+        });
+    }
+
+    function declineRide(rideId) {
+      // Store the declined rideId in localStorage
+      let declinedRides = JSON.parse(localStorage.getItem('declinedRides')) || [];
+      declinedRides.push(rideId);
+      localStorage.setItem('declinedRides', JSON.stringify(declinedRides));
+
+      // Get the ride card element
+      const rideCard = document.querySelector(`[value="${rideId}"]`).closest('.list-group-item');
+
+      // Simply remove the card from view
+      rideCard.remove();
+    }
+
+  </script>
+  <style>
+    .fade-in {
+      animation: fadeIn 0.5s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</body>
+
+</html>

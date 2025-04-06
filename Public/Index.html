@@ -15,7 +15,7 @@
       href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="/style.css" />
   </head>
   <body class="row m-0">
     <div class="col-md-6 m-0 position-relative vh-100 left-side">
@@ -57,9 +57,9 @@
           </p>
         </div>
       </section>
-      <section class="DriverReg  p-4 w-75 position-absolute top-50 start-50 translate-middle d-none">
+      <section class="DriverReg h-100 p-4 w-75 position-absolute top-50 start-50 translate-middle d-none">
         <h2 class="text-center mb-4 montserrat-head">Drive With Us</h2>
-        <form action="" class="overflow-auto">
+        <form action="" class="overflow-auto h-100 carrd">
           <div class="mb-3">
             <label for="email" class="form-label">FirstName</label>
             <input
@@ -128,6 +128,17 @@
             />
           </div>
           <div class="mb-3">
+            <label for="email" class="form-label">License Plate</label>
+            <input
+              type="text"
+              class="form-control round"
+              id="Dlplate"
+              name="LicensePlate"
+              placeholder="Enter License Plate Number"
+              required
+            />
+          </div>
+          <div class="mb-3">
             <label for="password" class="form-label">Password</label>
             <div class="input-group">
               <input
@@ -145,12 +156,13 @@
           <button type="submit" class="btn btn-primary w-100 rounder" style="background-color: #1017eb"         >
             Confirm
           </button>
+          <div class="d-flex justify-content-center mt-2">
+            <p class="montserrat-head">
+              Already have an account? <a href="#" id="logInLinkDriver">Log In!</a>
+            </p>
+          </div>
         </form>
-        <div class="d-flex justify-content-center mt-2">
-          <p class="montserrat-head">
-            Already have an account? <a href="#" id="logInLinkDriver">Log In!</a>
-          </p>
-        </div>
+        
       </section>
       <section class="StudentReg p-4 w-75 position-absolute top-50 start-50 translate-middle d-none">
         <h2 class="text-center mb-4 montserrat-head">Ride With Us</h2>
@@ -185,6 +197,17 @@
               id="SPhoneNo"
               name="phoneNo"
               placeholder="Enter PhoneNo"
+              required
+            />
+          </div>
+          <div class="mb-3">
+            <label for="email" class="form-label">Department </label>
+            <input
+              type="text"
+              class="form-control round"
+              id="SDept"
+              name="Department"
+              placeholder="Enter Department"
               required
             />
           </div>

@@ -22,12 +22,13 @@ const rideRequestSchema = new mongoose.Schema({
     },
     status: { 
         type: String, 
-        enum: ['pending', 'accepted', 'completed', 'canceled'], 
+        enum: ['pending', 'accepted','in_progress', 'completed', 'cancelled'], 
         default: 'pending' 
     },
     requestedAt: { 
         type: Date, 
-        default: Date.now 
+        default: Date.now, 
+        
     },
     acceptedAt: { 
         type: Date 

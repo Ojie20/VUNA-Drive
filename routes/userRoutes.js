@@ -7,10 +7,11 @@ const jwt = require('jsonwebtoken');
 // Register as student
 router.post('/register/student', async (req, res) => {
   try {
-    const { firstName, lastName, email, phoneNo, password } = req.body;
+    const { firstName,Department, lastName, email, phoneNo, password } = req.body;
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = new User({
       firstName,
+      Department,
       lastName,
       email,
       phoneNo,
@@ -18,8 +19,12 @@ router.post('/register/student', async (req, res) => {
       role: 'student'
     });
     const newuser = await user.save();
-    const token = jwt.sign({ userId: newuser._id }, 'ADMIN', { expiresIn: '1h' });
-    res.cookie('token', token, { httpOnly: true });
+    const token =  newuser._id 
+    res.cookie('Vunatoken', token, {
+      httpOnly: false,
+      secure: true,
+      sameSite: 'Strict'
+    });
     return res.redirect('/shome');
     
   } catch (error) {
@@ -30,10 +35,11 @@ router.post('/register/student', async (req, res) => {
 // Register as driver
 router.post('/register/driver', async (req, res) => {
   try {
-    const { firstName, lastName, email, phoneNo, password, accNo, bank } = req.body;
+    const { firstName,LicensePlate, lastName, email, phoneNo, password, accNo, bank } = req.body;
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = new User({
       firstName,
+      LicensePlate,
       lastName,
       email,
       phoneNo,
@@ -43,8 +49,12 @@ router.post('/register/driver', async (req, res) => {
       bank
     });
     const newuser = await user.save();
-    const token = jwt.sign({ userId: newuser._id }, 'ADMIN', { expiresIn: '1h' });
-    res.cookie('token', token, { httpOnly: true });
+    const token =  newuser._id 
+    res.cookie('Vunatoken', token, {
+      httpOnly: false,
+      secure: true,
+      sameSite: 'Strict'
+    });
     return res.redirect('/dhome'); 
     
   } catch (error) {
@@ -64,8 +74,12 @@ router.post('/login', async (req, res) => {
     if (!isMatch) {
       return res.status(400).json({ error: 'Invalid email or password' });
     }
-    const token = jwt.sign({ userId: user._id }, 'ADMIN', { expiresIn: '1h' });
-    res.cookie('token', token, { httpOnly: true });
+    const token =  user._id 
+    res.cookie('Vunatoken', token, {
+      httpOnly: false,
+      secure: true,
+      sameSite: 'Strict'
+    });
     if (user.role === "student") {
       return res.redirect('/shome');  
     } else {
@@ -74,6 +88,19 @@ router.post('/login', async (req, res) => {
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
+});
+
+// Add this new route
+router.get('/driver/:id', async (req, res) => {
+    try {
+        const driver = await User.findById(req.params.id).select('-password');
+        if (!driver || driver.role !== 'driver') {
+            return res.status(404).json({ error: 'Driver not found' });
+        }
+        res.json(driver);
+    } catch (error) {
+        res.status(500).json({ error: 'Error fetching driver details' });
+    }
 });
 
 module.exports = router;

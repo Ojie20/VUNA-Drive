@@ -48,6 +48,8 @@ document.addEventListener("DOMContentLoaded", function () {
   loginSection.classList.remove("d-none");
 
   // sendind data logic
+
+
   function sendFormData(formData, url) {
     console.log('formData:', JSON.stringify(formData));
     const data = {};
@@ -55,7 +57,7 @@ document.addEventListener("DOMContentLoaded", function () {
       data[key] = value;
       console.log('data:', data);
     });
-    
+
     fetch(url, {
       method: 'POST',
       headers: {
@@ -63,25 +65,31 @@ document.addEventListener("DOMContentLoaded", function () {
       },
       body: JSON.stringify(data)
     })
-    .then(response => {
-      if (response.redirected) {
-        window.location.href = response.url; 
-      } else {
-        return response.json();  
-      }
-    })
-    .then(data => {
-      console.log('Success:', data);
-    })
-    .catch((error) => {
-      console.error('Error:', error);
-    });
+      .then(response => {
+        if (response.redirected) {
+          window.location.href = response.url;
+        } else {
+          return response.json();
+        }
+      })
+      .then(data => {
+        console.log('Success:', data);
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+      });
   }
 
   document.querySelector("#login form").addEventListener('submit', function (event) {
     event.preventDefault();
     let form = event.target
-    let formData = new FormData(form)    
+    console.log(form)
+    let formData = new FormData(form)
+    
+    const json = JSON.stringify(Object.fromEntries(formData.entries()));
+    console.log("FormData as JSON:", json);
+
+
     sendFormData(formData, '/users/login');
   });
 

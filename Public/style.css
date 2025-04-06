@@ -38,3 +38,31 @@ a {
   text-decoration: none;
   color: #840e0e;
 }
+
+.DriverReg .carrd {
+  overflow: hidden;
+  max-height: 90vh;
+}
+
+.DriverReg form {
+  padding-right: 15px;
+  scrollbar-width: thin;
+}
+
+.DriverReg form::-webkit-scrollbar {
+  width: 6px;
+}
+
+.DriverReg form::-webkit-scrollbar-track {
+  background: rgb(101, 160, 225);;
+  border-radius: 3px;
+}
+
+.DriverReg form::-webkit-scrollbar-thumb {
+  background: rgb(6, 88, 220);;
+  border-radius: 3px;
+}
+
+.DriverReg form::-webkit-scrollbar-thumb:hover {
+  background: rgb(6, 88, 220);;
+}

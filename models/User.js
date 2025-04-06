@@ -27,6 +27,10 @@ const userSchema = new mongoose.Schema({
     enum: ['student', 'driver'],
     required: true
   },
+  Department: {
+    type: String,
+    required: function() { return this.role === 'student'; }
+  },
   accNo: {
     type: String,
     required: function() { return this.role === 'driver'; }
@@ -34,6 +38,12 @@ const userSchema = new mongoose.Schema({
   bank: {
     type: String,
     required: function() { return this.role === 'driver'; }
+  },
+  LicensePlate: {
+    type: String,
+    required: function() { return this.role === 'driver'; },
+    set: (value) => value.toUpperCase()
+
   }
 });
 
